@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Nathiya's Birthday Surprise</title>
+  <meta name="description" content="An interactive cinematic birthday surprise experience crafted for Nathiya." />
+  <meta property="og:title" content="Nathiya's Birthday Surprise" />
+  <meta property="og:description" content="An interactive cinematic birthday surprise experience crafted for Nathiya." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Google Fonts: Display, Title & Body -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Playfair+Display:ital,wght@0,500;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- External CDN Libraries (GSAP & Canvas Confetti) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <!-- Ambient Space & Particle Background -->
+  <canvas id="ambient-canvas"></canvas>
+
+  <!-- Screen Flash for Camera & Transitions -->
+  <div id="screen-flash-overlay" class="screen-flash-overlay"></div>
+
+  <!-- Flying Glowing Butterfly for Story Transitions -->
+  <div id="flying-butterfly" class="butterfly-flight">
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M50 50 C20 10 0 30 10 65 C18 90 45 70 50 55 C55 70 82 90 90 65 C100 30 80 10 50 50 Z" fill="url(#butterflyGrad)" />
+      <defs>
+        <linearGradient id="butterflyGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#fff5cc" />
+          <stop offset="50%" stop-color="#ffd700" />
+          <stop offset="100%" stop-color="#ff7eb3" />
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+
+  <!-- Birthday Song (Autoplay Background Music) -->
+  <audio id="birthday-song" preload="auto">
+    <source src="assets/audio/birth-song.mpeg" type="audio/mpeg" />
+  </audio>
+
+  
+
+    <!-- ====================================================================
+         CHAPTER 0: OPENING — SECRET ACCESS
+         ==================================================================== -->
+    <section id="chapter-opening" class="chapter-screen active">
+      <div class="opening-text-container">
+        <h1 id="opening-line-1" class="opening-line">A little surprise is waiting...</h1>
+        <h2 id="opening-line-2" class="opening-line">But it's not meant for everyone.</h2>
+      </div>
+
+      <div id="opening-password-box" class="password-box">
+        <div class="input-glow-wrapper">
+          <input 
+            type="password" 
+            id="opening-password-input" 
+            class="glowing-input" 
+            placeholder="Enter the secret password" 
+            autocomplete="off"
+          />
+        </div>
+        <button id="btn-unlock-opening" class="cinematic-btn">Unlock ✨</button>
+        <p id="opening-error-msg" class="error-feedback"></p>
+        <span id="opening-hint-pill" class="hint-pill">✨ Tap for hint</span>
+      </div>
+
+      <div id="opening-granted-banner" class="granted-banner">
+        Access Granted ✨
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         CHAPTER 1: THE MYSTERIOUS DOOR
+         ==================================================================== -->
+    <section id="chapter-door" class="chapter-screen">
+      <!-- Interactive Moon Easter Egg (click 3 times) -->
+      <div id="interactive-moon" class="moon-element" title="Touch the moon"></div>
+
+      <h2 class="cinematic-title">Chapter I</h2>
+      <p class="cinematic-sub">There is something waiting behind this door...</p>
+
+      <div class="door-wrapper">
+        <div class="door-frame"></div>
+        <div class="door-interior">
+          <div id="door-light-beam" class="door-light-beam"></div>
+        </div>
+
+        <!-- 3D Door Leaf -->
+        <div id="main-door-leaf" class="door-leaf">
+          <div class="door-hint-glow"></div>
+          <div class="door-knocker"></div>
+          <div class="door-panel-decor"></div>
+          <div class="door-panel-decor"></div>
+          <div class="door-handle"></div>
+        </div>
+
+        <!-- The Human Hand holding the Cake Delivery -->
+        <div id="hand-cake-delivery" class="hand-cake-delivery">
+          <div class="cake-container">
+            <div class="cake-topper">Happy Birthday <span class="recipient-name-dynamic">Nathiya</span></div>
+            <div id="candles-row" class="candles-row"></div>
+            
+            <div class="cake-tier-top">
+              <div class="cake-gold-drip"></div>
+            </div>
+            <div class="cake-tier-bottom">
+              <div class="cake-gold-drip"></div>
+            </div>
+            <div class="cake-plate"></div>
+          </div>
+
+          <div class="hands-holder">
+            <div class="hand-glove"></div>
+            <div class="hand-glove"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="door-reveal-text" class="door-reveal-text">
+        <h3 class="cinematic-sub" style="font-size: 24px; color: #ffd700;">It's yours ✨</h3>
+        <button id="btn-accept-cake" class="cinematic-btn">Blow Candles & Make a Wish 🎂</button>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         CHAPTER 2: GRAND WISH (CINEMATIC BLAST)
+         ==================================================================== -->
+    <section id="chapter-grand-wish" class="chapter-screen">
+      <div class="grand-wish-stage">
+        <!-- Expanding shockwave rings -->
+        <div class="grand-wish-shockwave"></div>
+        <div class="grand-wish-shockwave"></div>
+        <div class="grand-wish-shockwave"></div>
+
+        <!-- Central light burst & rotating rays -->
+        <div id="gw-burst" class="grand-wish-burst"></div>
+        <div id="gw-rays" class="grand-wish-rays"></div>
+
+        <!-- Cinematic Grand Wish Text -->
+        <h1 id="gw-happy" class="grand-wish-line grand-wish-happy">Happy Birthday</h1>
+        <h2 id="gw-name" class="grand-wish-line grand-wish-name">
+          <span class="recipient-name-dynamic">Nathiya</span>
+        </h2>
+        <p id="gw-caption" class="grand-wish-caption">✨ And all the stars aligned, just for you ✨</p>
+
+        <!-- Floating golden particles -->
+        <div id="gw-particles" class="grand-wish-particles"></div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         CHAPTER 3: GALAXY OF STARS (21 Stars + Legendary Star)
+         ==================================================================== -->
+    <section id="chapter-galaxy" class="chapter-screen">
+      <!-- Cinematic blast-open effects -->
+      <div id="galaxy-burst" class="galaxy-burst"></div>
+      <div class="galaxy-shockwave"></div>
+      <div class="galaxy-shockwave"></div>
+      <div class="galaxy-shockwave"></div>
+      <div id="galaxy-rays" class="galaxy-rays"></div>
+
+      <div class="galaxy-header">
+        <span id="stars-counter-badge" class="stars-counter-pill">🌟 Stars Discovered: 0 / 21</span>
+        <p class="cinematic-sub">Somewhere in this universe, there are a few things I wanted you to know...</p>
+      </div>
+
+      <!-- Full-screen sky stage -->
+      <div id="galaxy-stage" class="galaxy-stage">
+        <div id="constellation-field" class="constellation-field"></div>
+
+        <!-- Legendary Golden Star -->
+        <div id="legendary-star" class="legendary-star" title="Legendary Golden Star">
+          <div class="legendary-rays"></div>
+          <div class="legendary-halo"></div>
+          <div class="legendary-orbit"><span class="legendary-orbit-dot"></span></div>
+          <div class="legendary-ring"></div>
+          <div class="legendary-core"><span class="legendary-core-spark"></span></div>
+        </div>
+
+        <!-- Ambience drifting sparkles -->
+        <div id="galaxy-sparkles" class="galaxy-sparkles"></div>
+      </div>
+
+      <!-- Star Modal Dialog for Typewriter text -->
+      <div id="star-modal-overlay" class="star-modal-overlay">
+        <div class="star-modal-card">
+          <div id="star-number-tag" class="star-number-tag">Star #1</div>
+          <p id="star-quote-text" class="star-quote-text"></p>
+          <button id="btn-close-star-modal" class="cinematic-btn" style="margin-top: 24px; padding: 10px 28px; font-size: 13px;">Next Star ✨</button>
+        </div>
+      </div>
+
+      <!-- Legendary Star Revelation Modal -->
+      <div id="legendary-modal-overlay" class="star-modal-overlay">
+        <div class="star-modal-card" style="border-color: #ffd700; box-shadow: 0 0 50px rgba(255, 215, 0, 0.4);">
+          <div class="star-number-tag" style="color: #ffea79;">✨ The Legendary Star ✨</div>
+          <p id="legendary-line-1" class="star-quote-text" style="color: #ffd700; font-size: 20px;">
+            "Indha star ellarukkum theriyadhu... explore panna dhaan kidaikkum."
+          </p>
+          <p id="legendary-line-2" class="star-quote-text" style="color: #ffffff; font-size: 19px; margin-top: 15px;">
+            "Un smile-um appadi dhaan... paakra ellarum marakka mudiyadhu. ✨"
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         CHAPTER 3: HEART MACHINE
+         ==================================================================== -->
+    <section id="chapter-heart" class="chapter-screen">
+      <h2 class="cinematic-title">Some feelings can't be measured...</h2>
+      <p class="cinematic-sub">...but let's try anyway.</p>
+
+      <div class="heart-machine-wrapper">
+        <div id="giant-heart-box" class="giant-heart-box" title="Tap the heart">
+          <svg class="crystal-heart-svg" viewBox="0 0 100 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50 85 C20 60 5 45 5 25 C5 10 18 2 30 2 C40 2 46 8 50 14 C54 8 60 2 70 2 C82 2 95 10 95 25 C95 45 80 60 50 85 Z" fill="url(#heartGrad)" stroke="#ff94b8" stroke-width="2"/>
+            <!-- Facet crystalline lines -->
+            <path d="M50 14 L30 35 L50 85 L70 35 Z" fill="rgba(255,255,255,0.18)" />
+            <path d="M5 25 L30 35 L50 2" stroke="rgba(255,255,255,0.4)" stroke-width="1" />
+            <path d="M95 25 L70 35 L50 2" stroke="rgba(255,255,255,0.4)" stroke-width="1" />
+            <defs>
+              <linearGradient id="heartGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#ff3366" />
+                <stop offset="60%" stop-color="#ff6b8b" />
+                <stop offset="100%" stop-color="#990033" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <span id="heart-percentage-val" class="heart-percentage">0%</span>
+        </div>
+
+        <div class="heart-progress-bar">
+          <div id="heart-progress-fill" class="heart-progress-fill"></div>
+        </div>
+        <span class="heart-instruction">Tap the heart to fill the universe with love</span>
+
+        <div id="heart-completion-box" class="heart-completion-text">
+          <h3 class="cinematic-sub" style="font-size: 22px; color: #fff;">Okay... that's enough love for one universe. ❤️</h3>
+          <button id="btn-heart-continue" class="cinematic-btn">Journey Through Time ⏳</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         CHAPTER 4: TIME MACHINE
+         ==================================================================== -->
+    <section id="chapter-time" class="chapter-screen">
+      <h2 class="cinematic-title">Chapter IV — The Time Machine</h2>
+      <p class="cinematic-sub">Turn back the hands of time...</p>
+
+      <div class="clock-environment">
+        <div class="clock-housing">
+          <!-- Mechanical Gears -->
+          <svg class="gear gear-1" viewBox="0 0 100 100" fill="#ffd700">
+            <path d="M50 10 L54 0 L66 3 L67 14 L78 19 L87 11 L96 19 L90 30 L98 40 L100 52 L91 59 L93 71 L82 78 L78 89 L66 89 L59 98 L47 95 L44 85 L32 82 L22 89 L13 81 L20 71 L11 61 L9 49 L18 42 L16 30 L27 23 L31 12 L43 12 Z" opacity="0.4"/>
+          </svg>
+          <svg class="gear gear-2" viewBox="0 0 100 100" fill="#f6d365">
+            <path d="M50 10 L54 0 L66 3 L67 14 L78 19 L87 11 L96 19 L90 30 L98 40 L100 52 L91 59 L93 71 L82 78 L78 89 L66 89 L59 98 L47 95 L44 85 L32 82 L22 89 L13 81 L20 71 L11 61 L9 49 L18 42 L16 30 L27 23 L31 12 L43 12 Z" opacity="0.3"/>
+          </svg>
+
+          <!-- Clock Face -->
+          <div class="clock-face">
+            <span class="numeral" style="top: 8%; left: 50%;">XII</span>
+            <span class="numeral" style="top: 50%; left: 92%;">III</span>
+            <span class="numeral" style="top: 92%; left: 50%;">VI</span>
+            <span class="numeral" style="top: 50%; left: 8%;">IX</span>
+
+            <div id="clock-hour-hand" class="hand-hour"></div>
+            <div id="clock-min-hand" class="hand-minute"></div>
+            <div class="clock-center-pin"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="time-story-container">
+        <p id="time-story-text" class="time-story-text">Tap below to wind back the moments...</p>
+      </div>
+
+      <button id="btn-rewind-time" class="cinematic-btn" style="margin-top: 15px;">Rewind Time ⏪</button>
+      <button id="btn-time-continue" class="cinematic-btn" style="margin-top: 15px; display: none;">Unlock The Vault 🔐</button>
+    </section>
+
+    <!-- ====================================================================
+         CHAPTER 5: SECRET VAULT
+         ==================================================================== -->
+    <section id="chapter-vault" class="chapter-screen">
+      <h2 class="cinematic-title">Chapter V — The Secret Vault</h2>
+
+      <div class="vault-door-container">
+        <div id="vault-bulkhead" class="vault-bulkhead">
+          <div id="vault-wheel" class="vault-wheel">
+            <div class="wheel-spoke"></div>
+            <div class="wheel-spoke"></div>
+            <div class="wheel-spoke"></div>
+            <div class="wheel-center-hub"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="vault-lock-controls" class="password-box visible" style="margin-top: 10px;">
+        <p class="cinematic-sub" style="font-size: 16px; margin-bottom: 8px;">Enter the second secret key</p>
+        <div id="vault-input-box" class="input-glow-wrapper">
+          <input 
+            type="password" 
+            id="vault-password-input" 
+            class="glowing-input" 
+            placeholder="Enter the secret vault code" 
+            autocomplete="off"
+          />
+        </div>
+        <button id="btn-unlock-vault" class="cinematic-btn">Open Vault 🗝️</button>
+        <p id="vault-error-msg" class="error-feedback"></p>
+        <span id="vault-hint-pill" class="hint-pill">✨ Tap for hint</span>
+      </div>
+
+      <!-- Floating Envelopes inside Vault -->
+      <div id="envelopes-grid" class="envelopes-grid"></div>
+
+      <!-- Letter reading modal -->
+      <div id="letter-modal-overlay" class="star-modal-overlay">
+        <div class="star-modal-card">
+          <div id="letter-modal-title" class="star-number-tag" style="font-size: 16px; color: #ffd700;">A Secret Note</div>
+          <p id="letter-modal-body" class="star-quote-text" style="font-size: 17px; min-height: 100px;"></p>
+          <button id="btn-close-letter" class="cinematic-btn" style="margin-top: 20px; padding: 10px 24px; font-size: 13px;">Keep in Heart 💌</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         CHAPTER 6: MEMORY CAMERA
+         ==================================================================== -->
+    <section id="chapter-camera" class="chapter-screen">
+      <h2 class="cinematic-title">📸 Capture This Moment</h2>
+      <p class="cinematic-sub">Some memories are made to stay forever...</p>
+
+      <div class="camera-stage">
+        <!-- Vintage Polaroid Camera -->
+        <div id="polaroid-camera-body" class="polaroid-camera-body" title="Click to take photo">
+          <div id="camera-shutter-btn" class="shutter-button"></div>
+          <div class="camera-flash-bulb"></div>
+          <div class="camera-lens">
+            <div class="lens-glare"></div>
+          </div>
+          <div class="film-slot"></div>
+        </div>
+
+        <div id="camera-countdown" style="position: absolute; top: -30px; font-size: 32px; font-weight: 700; color: #ffd700; opacity: 0;"></div>
+
+        <!-- Realistic Ejecting & Developing Polaroid Photo -->
+        <div id="polaroid-photo-frame" class="polaroid-photo-frame">
+          <div class="photo-image-container">
+            <img 
+              id="polaroid-real-photo" 
+              class="actual-photo" 
+              src="assets/images/birthday-photo.jpg" 
+              alt="Birthday Portrait of Nathiya"
+              referrerPolicy="no-referrer"
+            />
+          </div>
+          <div id="polaroid-caption" class="photo-caption">
+            <div>Captured — One Beautiful Birthday</div>
+            <div class="photo-date recipient-birthday-dynamic">18 September</div>
+          </div>
+        </div>
+      </div>
+
+      <button id="btn-release-photo" class="cinematic-btn" style="margin-top: 15px; display: none;">Release Into The Stars 🎈</button>
+    </section>
+
+    <!-- ====================================================================
+         CHAPTER 7: FINAL GOODBYE
+         ==================================================================== -->
+    <section id="chapter-goodbye" class="chapter-screen">
+      <div class="goodbye-sky">
+        <div id="solitary-star" class="solitary-star" title="Twinkling Memory"></div>
+        <div id="goodbye-typewriter" class="goodbye-typewriter-text"></div>
+
+        <div id="final-memory-line" class="final-memory-text">
+          <p style="margin-bottom: 8px;">Some birthdays end...</p>
+          <p style="color: #ffffff; font-size: 1.1em;">...but beautiful memories never do. ❤️</p>
+        </div>
+
+        <button id="btn-replay-story" class="cinematic-btn replay-btn">Relive The Story ✨</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Script entry point -->
+  <script src="./script.js"></script>
+</body>
+</html>

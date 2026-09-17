@@ -1,0 +1,2082 @@
+/* ==========================================================================
+   CINEMATIC BIRTHDAY SURPRISE — STYLESHEET
+   Awwwards-level interactive short film aesthetic for Nathiya
+   ========================================================================== */
+
+:root {
+  --bg-deep: #05060b;
+  --bg-space: #090a14;
+  --gold: #f6d365;
+  --gold-glow: rgba(246, 211, 101, 0.4);
+  --gold-bright: #ffea79;
+  --rose-pink: #fda085;
+  --rose-soft: #fbc2eb;
+  --soft-white: #f8fafc;
+  --muted-text: rgba(248, 250, 252, 0.7);
+  --dark-glass: rgba(15, 18, 32, 0.75);
+  --border-glass: rgba(246, 211, 101, 0.2);
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-title: 'Cinzel', serif;
+  --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --transition-smooth: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-deep);
+  color: var(--soft-white);
+  font-family: var(--font-body);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Ambient Canvas behind everything */
+#ambient-canvas, #space-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+#space-canvas {
+  z-index: 2;
+}
+
+/* Audio & Global UI Controls */
+.global-hud {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hud-btn {
+  background: rgba(15, 20, 35, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(246, 211, 101, 0.25);
+  color: var(--soft-white);
+  padding: 8px 16px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.hud-btn:hover {
+  background: rgba(246, 211, 101, 0.15);
+  border-color: var(--gold);
+  transform: translateY(-1px);
+  box-shadow: 0 0 15px var(--gold-glow);
+}
+
+.sound-waves {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 14px;
+}
+
+.sound-waves span {
+  display: block;
+  width: 2px;
+  height: 4px;
+  background: var(--gold);
+  border-radius: 1px;
+  animation: soundWave 1.2s ease-in-out infinite alternate;
+}
+
+.sound-waves span:nth-child(2) { height: 10px; animation-delay: 0.2s; }
+.sound-waves span:nth-child(3) { height: 14px; animation-delay: 0.4s; }
+.sound-waves span:nth-child(4) { height: 6px; animation-delay: 0.1s; }
+
+.muted .sound-waves span {
+  animation: none !important;
+  height: 2px !important;
+  opacity: 0.4;
+}
+
+@keyframes soundWave {
+  0% { transform: scaleY(0.3); }
+  100% { transform: scaleY(1); }
+}
+
+/* Chapter Progress Indicator */
+.chapter-dots {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 999;
+  background: rgba(10, 12, 22, 0.6);
+  padding: 8px 16px;
+  border-radius: 9999px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dot-item {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.dot-item.active {
+  background: var(--gold);
+  width: 24px;
+  border-radius: 4px;
+  box-shadow: 0 0 10px var(--gold-glow);
+}
+
+.dot-item:hover {
+  background: rgba(246, 211, 101, 0.7);
+}
+
+/* Main Container */
+#story-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  overflow: hidden;
+}
+
+/* Universal Chapter View */
+.chapter-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 1.2s;
+  padding: 20px;
+  text-align: center;
+}
+
+.chapter-screen.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Typography styles */
+.cinematic-title {
+  font-family: var(--font-title);
+  font-size: clamp(24px, 4.5vw, 44px);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--soft-white);
+  text-shadow: 0 0 30px rgba(246, 211, 101, 0.3);
+  margin-bottom: 16px;
+  line-height: 1.3;
+}
+
+.cinematic-sub {
+  font-family: var(--font-display);
+  font-size: clamp(16px, 2.2vw, 22px);
+  font-style: italic;
+  color: var(--gold-bright);
+  letter-spacing: 0.04em;
+  max-width: 650px;
+  line-height: 1.6;
+  opacity: 0.9;
+  margin-bottom: 24px;
+}
+
+.cinematic-btn {
+  background: linear-gradient(135deg, rgba(246, 211, 101, 0.25), rgba(253, 160, 133, 0.25));
+  border: 1px solid var(--gold);
+  color: var(--soft-white);
+  padding: 14px 34px;
+  border-radius: 9999px;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  box-shadow: 0 0 20px rgba(246, 211, 101, 0.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+}
+
+.cinematic-btn::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 60%);
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.5s ease;
+}
+
+.cinematic-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 0 30px rgba(246, 211, 101, 0.5);
+  border-color: #fff;
+}
+
+.cinematic-btn:hover::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.cinematic-btn:active {
+  transform: translateY(1px);
+}
+
+/* ==========================================================================
+   CHAPTER 0: OPENING / SECRET ACCESS
+   ========================================================================== */
+#chapter-opening {
+  background: radial-gradient(circle at center, #0f1424 0%, #05060b 80%);
+}
+
+.opening-text-container {
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.opening-line {
+  font-family: var(--font-display);
+  font-size: clamp(20px, 3.2vw, 32px);
+  color: var(--soft-white);
+  opacity: 0;
+  transform: translateY(15px);
+  transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+  position: absolute;
+}
+
+.opening-line.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.password-box {
+  margin-top: 30px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 380px;
+}
+
+.password-box.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.input-glow-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.glowing-input {
+  width: 100%;
+  background: rgba(15, 20, 35, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(246, 211, 101, 0.35);
+  border-radius: 9999px;
+  padding: 15px 24px;
+  font-size: 16px;
+  color: var(--soft-white);
+  font-family: var(--font-body);
+  text-align: center;
+  outline: none;
+  transition: var(--transition-smooth);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(246, 211, 101, 0.05);
+}
+
+.glowing-input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 25px var(--gold-glow), inset 0 0 20px rgba(246, 211, 101, 0.15);
+}
+
+.glowing-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
+}
+
+.error-feedback {
+  font-size: 14px;
+  color: #ff8b8b;
+  min-height: 22px;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: all 0.3s ease;
+  font-style: italic;
+}
+
+.error-feedback.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hint-pill {
+  font-size: 12px;
+  color: rgba(246, 211, 101, 0.8);
+  background: rgba(246, 211, 101, 0.08);
+  border: 1px dashed rgba(246, 211, 101, 0.3);
+  padding: 4px 12px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.hint-pill:hover {
+  background: rgba(246, 211, 101, 0.18);
+}
+
+.shake {
+  animation: shakeAnim 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes shakeAnim {
+  10%, 90% { transform: translate3d(-3px, 0, 0); }
+  20%, 80% { transform: translate3d(5px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+  40%, 60% { transform: translate3d(6px, 0, 0); }
+}
+
+.granted-banner {
+  font-family: var(--font-title);
+  font-size: clamp(24px, 4vw, 36px);
+  color: var(--gold-bright);
+  text-shadow: 0 0 30px var(--gold);
+  letter-spacing: 0.15em;
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.granted-banner.show {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ==========================================================================
+   CHAPTER 1: THE MYSTERIOUS DOOR
+   ========================================================================== */
+#chapter-door {
+  perspective: 1200px;
+}
+
+.moon-element {
+  position: absolute;
+  top: 40px;
+  left: 60px;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fffdf0 0%, #e2d9b5 60%, #9e9575 100%);
+  box-shadow: 0 0 50px rgba(255, 250, 220, 0.5), 0 0 100px rgba(255, 250, 220, 0.25);
+  cursor: pointer;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  z-index: 5;
+}
+
+.moon-element:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 70px rgba(255, 250, 220, 0.8);
+}
+
+.door-wrapper {
+  position: relative;
+  width: 240px;
+  height: 400px;
+  margin: 20px auto;
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+@media (min-width: 768px) {
+  .door-wrapper {
+    width: 280px;
+    height: 480px;
+  }
+}
+
+/* Archway frame */
+.door-frame {
+  position: absolute;
+  inset: -14px;
+  border: 14px solid #1a171d;
+  border-bottom: 20px solid #141216;
+  border-radius: 140px 140px 0 0;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.9), inset 0 0 25px rgba(0, 0, 0, 0.9), 0 0 15px rgba(246, 211, 101, 0.15);
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* Interior Void behind door */
+.door-interior {
+  position: absolute;
+  inset: 0;
+  border-radius: 126px 126px 0 0;
+  background: #020204;
+  overflow: visible;
+  z-index: 5;
+}
+
+/* Volumetric light leaking out */
+.door-light-beam {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at 50% 60%, rgba(255, 220, 130, 0.85) 0%, rgba(246, 175, 75, 0.5) 45%, transparent 75%);
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 2s cubic-bezier(0.16, 1, 0.3, 1), transform 2s cubic-bezier(0.16, 1, 0.3, 1);
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+.door-light-beam.open {
+  opacity: 1;
+  transform: scale(1.3);
+}
+
+/* 3D Door Leaf */
+.door-leaf {
+  position: absolute;
+  inset: 0;
+  border-radius: 126px 126px 0 0;
+  background: linear-gradient(135deg, #241a20 0%, #151117 100%);
+  border: 2px solid rgba(246, 211, 101, 0.3);
+  transform-origin: left center;
+  transform-style: preserve-3d;
+  transition: transform 3.5s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  z-index: 15;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.door-leaf::after {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border-radius: 114px 114px 0 0;
+  border: 1px solid rgba(246, 211, 101, 0.15);
+  pointer-events: none;
+}
+
+.door-panel-decor {
+  width: 60%;
+  height: 25%;
+  border: 1px solid rgba(246, 211, 101, 0.2);
+  margin: 10px 0;
+  border-radius: 6px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.6);
+}
+
+.door-handle {
+  position: absolute;
+  right: 22px;
+  top: 55%;
+  width: 14px;
+  height: 50px;
+  background: linear-gradient(to right, #ffd700, #b8860b);
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  cursor: pointer;
+}
+
+.door-knocker {
+  position: absolute;
+  top: 35%;
+  width: 32px;
+  height: 32px;
+  border: 3px solid #ffd700;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+}
+
+.door-leaf.open {
+  transform: rotateY(-82deg);
+}
+
+/* Door pulse glow hint before click */
+.door-hint-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 126px 126px 0 0;
+  box-shadow: 0 0 25px rgba(246, 211, 101, 0.3);
+  animation: doorPulse 3s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes doorPulse {
+  0% { opacity: 0.3; transform: scale(1); }
+  100% { opacity: 0.85; transform: scale(1.02); }
+}
+
+/* The Cake Hand Presentation */
+.hand-cake-delivery {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%) translateZ(-150px) scale(0.4);
+  opacity: 0;
+  z-index: 25;
+  transition: all 2.8s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hand-cake-delivery.presented {
+  opacity: 1;
+  transform: translate(-50%, -50%) translateZ(120px) scale(1);
+  pointer-events: auto;
+}
+
+/* Stylized realistic Cake */
+.cake-container {
+  position: relative;
+  width: 220px;
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.6));
+}
+
+.cake-topper {
+  position: absolute;
+  top: -20px;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gold-bright);
+  text-shadow: 0 0 10px var(--gold);
+  letter-spacing: 0.05em;
+  background: rgba(10, 12, 22, 0.7);
+  padding: 4px 14px;
+  border-radius: 9999px;
+  border: 1px solid var(--gold);
+  white-space: nowrap;
+  animation: topperFloat 3s ease-in-out infinite alternate;
+}
+
+@keyframes topperFloat {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-6px); }
+}
+
+/* Candles */
+.candles-row {
+  position: absolute;
+  top: 18px;
+  display: flex;
+  gap: 16px;
+  z-index: 10;
+}
+
+.candle {
+  width: 8px;
+  height: 28px;
+  background: repeating-linear-gradient(45deg, #fff, #fff 4px, #fbc2eb 4px, #fbc2eb 8px);
+  border-radius: 4px 4px 0 0;
+  position: relative;
+}
+
+.candle-flame {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 16px;
+  background: radial-gradient(ellipse at bottom, #fff 0%, #ffea79 40%, #ff7700 80%, transparent 100%);
+  border-radius: 50% 50% 35% 35%;
+  box-shadow: 0 0 15px #ffb300, 0 0 30px #ff7700;
+  animation: flicker 0.4s infinite alternate ease-in-out;
+  transform-origin: center bottom;
+}
+
+@keyframes flicker {
+  0% { transform: translateX(-50%) rotate(-2deg) scale(0.95); }
+  100% { transform: translateX(-50%) rotate(3deg) scale(1.08); }
+}
+
+/* Cake Tiers */
+.cake-tier-top {
+  width: 140px;
+  height: 55px;
+  background: linear-gradient(to bottom, #ffffff 0%, #fff0f5 70%, #ffd1dc 100%);
+  border-radius: 12px 12px 6px 6px;
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  box-shadow: inset 0 4px 6px rgba(255, 255, 255, 0.8), 0 4px 10px rgba(0, 0, 0, 0.2);
+  position: relative;
+  margin-bottom: -4px;
+  z-index: 3;
+}
+
+.cake-tier-bottom {
+  width: 190px;
+  height: 65px;
+  background: linear-gradient(to bottom, #ffffff 0%, #ffe4e1 60%, #ffc0cb 100%);
+  border-radius: 14px 14px 10px 10px;
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  box-shadow: inset 0 4px 8px rgba(255, 255, 255, 0.8), 0 8px 18px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 2;
+}
+
+.cake-gold-drip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background: linear-gradient(to bottom, #ffd700, #daa520);
+  border-radius: 12px 12px 50% 50%;
+  opacity: 0.85;
+}
+
+.cake-plate {
+  width: 220px;
+  height: 14px;
+  background: linear-gradient(to bottom, #f0f0f0, #c0c0c0);
+  border-radius: 50%;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5), inset 0 2px 4px #fff;
+  z-index: 1;
+}
+
+/* Hands holding the plate */
+.hands-holder {
+  display: flex;
+  justify-content: space-between;
+  width: 180px;
+  margin-top: -6px;
+  z-index: 4;
+}
+
+.hand-glove {
+  width: 44px;
+  height: 38px;
+  background: radial-gradient(circle at 50% 30%, #e2beaa, #c2957f);
+  border-radius: 12px 12px 20px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.door-reveal-text {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 1s ease;
+  margin-top: 24px;
+}
+
+.door-reveal-text.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   CHAPTER 2: GRAND WISH (CINEMATIC BLAST)
+   ========================================================================== */
+#chapter-grand-wish {
+  background: #000000;
+  overflow: hidden;
+}
+
+.grand-wish-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+/* Expanding shockwave rings after the blast */
+.grand-wish-shockwave {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border: 2px solid var(--gold-bright);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.15);
+  box-shadow: 0 0 30px rgba(246, 211, 101, 0.6), inset 0 0 20px rgba(246, 211, 101, 0.3);
+  pointer-events: none;
+}
+
+.grand-wish-shockwave:nth-child(2) { border-width: 4px; background: rgba(246, 211, 101, 0.06); }
+.grand-wish-shockwave:nth-child(3) { border-width: 1px; background: rgba(255, 126, 179, 0.05); box-shadow: 0 0 40px rgba(255, 126, 179, 0.55), inset 0 0 20px rgba(255, 126, 179, 0.3); }
+
+.grand-wish-shockwave.play {
+  animation: gwShock 3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes gwShock {
+  0% { transform: scale(0.15); opacity: 0; }
+  12% { opacity: 1; }
+  70% { opacity: 0.5; }
+  100% { transform: scale(70); opacity: 0; }
+}
+
+/* Central golden light burst */
+.grand-wish-burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 130vmax;
+  height: 130vmax;
+  margin: -65vmax 0 0 -65vmax;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 247, 214, 0.95) 0%, rgba(255, 215, 0, 0.6) 28%, rgba(255, 160, 60, 0.28) 52%, transparent 72%);
+  opacity: 0;
+  transform: scale(0.05);
+  pointer-events: none;
+}
+
+.grand-wish-burst.play {
+  animation: gwBurst 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes gwBurst {
+  0% { transform: scale(0.05); opacity: 0; }
+  14% { opacity: 1; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+/* Rotating cinematic light rays */
+.grand-wish-rays {
+  position: absolute;
+  inset: -25%;
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(255, 215, 0, 0.16) 0deg 6deg,
+    transparent 6deg 14deg
+  );
+  opacity: 0;
+  transform: scale(0.3);
+  pointer-events: none;
+  border-radius: 50%;
+}
+
+.grand-wish-rays.play {
+  animation: gwRays 3.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes gwRays {
+  0% { opacity: 0; transform: scale(0.3) rotate(0deg); }
+  22% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.2) rotate(30deg); }
+}
+
+/* Grand wish typography */
+.grand-wish-line {
+  opacity: 0;
+  margin: 0;
+  pointer-events: none;
+  text-align: center;
+  line-height: 1.15;
+}
+
+.grand-wish-happy {
+  font-family: var(--font-title);
+  font-size: clamp(30px, 7vw, 76px);
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-indent: 0.28em;
+  color: var(--gold-bright);
+  text-shadow: 0 0 30px rgba(246, 211, 101, 0.85), 0 0 90px rgba(246, 211, 101, 0.45), 0 2px 0 #b8860b;
+  transform: scale(0.6);
+  filter: blur(16px);
+  transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1), filter 1.1s ease, opacity 1.1s ease;
+}
+
+.grand-wish-happy.play {
+  opacity: 1;
+  transform: scale(1);
+  filter: blur(0);
+}
+
+.grand-wish-name {
+  font-family: var(--font-display);
+  font-size: clamp(58px, 15vw, 160px);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  background: linear-gradient(135deg, #fff7d6 0%, #ffd700 30%, #ffb347 60%, #ff7eb3 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.55)) drop-shadow(0 10px 45px rgba(255, 126, 179, 0.4));
+  transform: scale(0.2) translateY(40px);
+  transition: transform 1.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.4s ease;
+}
+
+.grand-wish-name.play {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+.grand-wish-caption {
+  font-family: var(--font-display);
+  font-size: clamp(15px, 2.4vw, 22px);
+  font-style: italic;
+  color: var(--soft-white);
+  letter-spacing: 0.1em;
+  margin-top: 20px;
+  opacity: 0;
+  transform: translateY(14px);
+  text-shadow: 0 0 20px rgba(246, 211, 101, 0.6);
+  pointer-events: none;
+  transition: opacity 1s ease 0.2s, transform 1s ease 0.2s;
+}
+
+.grand-wish-caption.play {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Floating golden particles (spawned in JS) */
+.grand-wish-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.grand-wish-particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  background: var(--gold-bright);
+  border-radius: 50%;
+  opacity: 0;
+  box-shadow: 0 0 12px var(--gold-bright), 0 0 28px rgba(255, 200, 70, 0.8);
+  animation: gwParticle 2.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes gwParticle {
+  0% { transform: translate(0, 0) scale(1); opacity: 0; }
+  12% { opacity: 1; }
+  100% { transform: translate(var(--px), var(--py)) scale(0.05); opacity: 0; }
+}
+
+@media (max-width: 640px) {
+  .grand-wish-happy {
+    font-size: clamp(24px, 8.5vw, 40px);
+    letter-spacing: 0.1em;
+    text-indent: 0.1em;
+  }
+  .grand-wish-caption { max-width: 85%; }
+}
+
+/* ==========================================================================
+   CHAPTER 3: GALAXY OF STARS (CINEMATIC BLAST OPEN)
+   ========================================================================== */
+#chapter-galaxy {
+  background: radial-gradient(ellipse at 50% 42%, #16112d 0%, #0a0716 70%, #030206 100%);
+  overflow: hidden;
+}
+
+/* --- Cinematic blast-open layers --- */
+.galaxy-burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150vmax;
+  height: 150vmax;
+  margin: -75vmax 0 0 -75vmax;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 247, 214, 0.95) 0%, rgba(255, 215, 0, 0.55) 26%, rgba(255, 150, 90, 0.22) 50%, transparent 70%);
+  opacity: 0;
+  transform: scale(0.05);
+  pointer-events: none;
+}
+
+.galaxy-burst.play {
+  animation: galaxyBlast 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes galaxyBlast {
+  0% { transform: scale(0.05); opacity: 0; }
+  16% { opacity: 0.9; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+.galaxy-shockwave {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border: 2px solid var(--gold-bright);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.12);
+  box-shadow: 0 0 30px rgba(246, 211, 101, 0.6), inset 0 0 20px rgba(246, 211, 101, 0.3);
+  pointer-events: none;
+}
+
+.galaxy-shockwave:nth-child(3) { border-width: 4px; background: rgba(246, 211, 101, 0.05); }
+.galaxy-shockwave:nth-child(4) { border-color: rgba(255, 126, 179, 0.75); box-shadow: 0 0 40px rgba(255, 126, 179, 0.5), inset 0 0 20px rgba(255, 126, 179, 0.3); }
+
+.galaxy-shockwave.play {
+  animation: galaxyShock 3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes galaxyShock {
+  0% { transform: scale(0.12); opacity: 0; }
+  12% { opacity: 1; }
+  100% { transform: scale(65); opacity: 0; }
+}
+
+.galaxy-rays {
+  position: absolute;
+  inset: -30%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, rgba(255, 215, 0, 0.13) 0deg 6deg, transparent 6deg 15deg);
+  opacity: 0;
+  transform: scale(0.3);
+  pointer-events: none;
+}
+
+.galaxy-rays.play {
+  animation: galaxyRaySpin 3.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes galaxyRaySpin {
+  0% { opacity: 0; transform: scale(0.3) rotate(0deg); }
+  25% { opacity: 0.9; }
+  100% { opacity: 0; transform: scale(1.25) rotate(42deg); }
+}
+
+/* --- Header (fades in with the blast) --- */
+.galaxy-header {
+  position: absolute;
+  top: 22px;
+  width: 90%;
+  max-width: 800px;
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-14px);
+  transition: opacity 1s ease, transform 1s ease;
+}
+
+.galaxy-header.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.stars-counter-pill {
+  background: rgba(15, 20, 35, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--gold);
+  color: var(--gold-bright);
+  padding: 6px 18px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 12px;
+  letter-spacing: 0.08em;
+  box-shadow: 0 0 15px var(--gold-glow);
+}
+
+/* --- Full-screen sky that the stars scatter across --- */
+.galaxy-stage {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.galaxy-stage.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.constellation-field {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  cursor: crosshair;
+}
+
+/* --- Beautiful interactive stars --- */
+.clickable-star {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 15;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+.clickable-star.ignited, .clickable-star.discovered {
+  pointer-events: auto;
+}
+
+.clickable-star.ignited {
+  opacity: 1;
+  animation: starIgnite 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes starIgnite {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2) rotate(-40deg); filter: blur(6px); }
+  60% { opacity: 1; filter: blur(0); }
+  80% { transform: translate(-50%, -50%) scale(1.4); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+.star-core {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #ffe9a8 35%, #ffd700 75%, #ff9d00 100%);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.95), 0 0 26px rgba(255, 215, 0, 0.75), 0 0 50px rgba(255, 180, 90, 0.4);
+  position: relative;
+  animation: starPulse 2.6s infinite ease-in-out alternate;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+
+.star-core::before, .star-core::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95), transparent);
+}
+
+.star-core::before { width: 32px; height: 2px; }
+.star-core::after { width: 2px; height: 32px; }
+
+.clickable-star:hover .star-core {
+  transform: scale(1.6);
+  box-shadow: 0 0 20px #fff, 0 0 40px var(--gold), 0 0 65px #ff85c0;
+}
+
+.clickable-star.discovered {
+  animation: starDiscoverPop 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes starDiscoverPop {
+  0% { transform: translate(-50%, -50%) scale(1); filter: brightness(1); }
+  40% { transform: translate(-50%, -50%) scale(2); filter: brightness(2); }
+  100% { transform: translate(-50%, -50%) scale(1.12); filter: brightness(1.15); }
+}
+
+.clickable-star.discovered .star-core {
+  background: radial-gradient(circle at 35% 35%, #fffdf0 0%, #ffd700 35%, #ffa600 80%, #ff7300 100%);
+  box-shadow: 0 0 16px #ffd700, 0 0 34px rgba(255, 170, 30, 0.9), 0 0 60px rgba(255, 130, 50, 0.5);
+  animation: discoveredPulse 1.6s infinite ease-in-out alternate;
+}
+
+@keyframes discoveredPulse {
+  0% { transform: scale(0.9); }
+  100% { transform: scale(1.25); }
+}
+
+@keyframes starPulse {
+  0% { transform: scale(0.85); opacity: 0.7; }
+  100% { transform: scale(1.15); opacity: 1; }
+}
+
+/* --- Legendary Golden Star (grand & attractive) --- */
+.legendary-star {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 96px;
+  height: 96px;
+  margin: -48px 0 0 -48px;
+  z-index: 30;
+  opacity: 0;
+  transform: scale(0.2);
+  cursor: pointer;
+  pointer-events: none;
+  transition: opacity 1.2s ease, transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (min-width: 768px) {
+  .legendary-star {
+    width: 130px;
+    height: 130px;
+    margin: -65px 0 0 -65px;
+  }
+}
+
+.legendary-star.revealed {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+  animation: legendaryIntro 1.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.legendary-star.revealed.float-mode {
+  animation-name: legendaryFloat;
+  animation-duration: 4.2s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+@keyframes legendaryIntro {
+  0% { transform: scale(0.1) rotate(-90deg); }
+  55% { transform: scale(1.3) rotate(10deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+@keyframes legendaryFloat {
+  0%, 100% { transform: scale(1) translateY(0); }
+  50% { transform: scale(1.07) translateY(-12px); }
+}
+
+.legendary-rays {
+  position: absolute;
+  inset: -62%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, rgba(255, 215, 0, 0.2) 0deg 5deg, transparent 5deg 14deg);
+  animation: rotateRing 16s linear infinite;
+  opacity: 0.65;
+}
+
+.legendary-halo {
+  position: absolute;
+  inset: -40%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.32), rgba(255, 126, 179, 0.14) 46%, transparent 72%);
+  animation: haloPulse 3.2s ease-in-out infinite alternate;
+}
+
+@keyframes haloPulse {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  100% { transform: scale(1.12); opacity: 1; }
+}
+
+.legendary-orbit {
+  position: absolute;
+  inset: -36px;
+  border: 1px dashed rgba(255, 215, 0, 0.5);
+  border-radius: 50%;
+  animation: rotateRing 9s linear infinite;
+}
+
+.legendary-orbit-dot {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ffffff, #ffd700 60%, #ff8800 100%);
+  box-shadow: 0 0 14px #ffd700, 0 0 32px rgba(255, 160, 60, 0.85);
+}
+
+.legendary-ring {
+  position: absolute;
+  inset: -8px;
+  border: 2px solid rgba(255, 215, 0, 0.75);
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgba(255, 215, 0, 0.55), inset 0 0 14px rgba(255, 215, 0, 0.4);
+  animation: rotateRing 6s linear infinite;
+}
+
+.legendary-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 32%, #ffffff 0%, #ffe88a 30%, #ffd700 55%, #ff8e1e 100%);
+  box-shadow: 0 0 30px #ffd700, 0 0 70px rgba(255, 180, 60, 0.9), 0 0 120px rgba(255, 140, 40, 0.6);
+  animation: corePulse 2.2s ease-in-out infinite alternate;
+}
+
+.legendary-core-spark {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, transparent 62%);
+  animation: sparkleSpin 4s linear infinite;
+}
+
+@keyframes corePulse {
+  0% { transform: scale(0.92); }
+  100% { transform: scale(1.12); }
+}
+
+@keyframes sparkleSpin {
+  from { transform: rotate(0deg) scale(0.75); }
+  to { transform: rotate(360deg) scale(1.2); }
+}
+
+/* --- Ambient drifting sparkles --- */
+.galaxy-sparkles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.galaxy-spark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--gold-bright);
+  opacity: 0;
+  box-shadow: 0 0 8px var(--gold-bright), 0 0 20px rgba(255, 200, 70, 0.7);
+  animation: sparkDrift 6.5s ease-out infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes sparkDrift {
+  0% { transform: translate(0, 0) scale(1); opacity: 0; }
+  15% { opacity: 0.9; }
+  100% { transform: translate(var(--sx), var(--sy)) scale(0.1); opacity: 0; }
+}
+
+@keyframes rotateRing {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Star Message Modal Card */
+.star-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 6, 12, 0.7);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.star-modal-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.star-modal-card {
+  background: rgba(18, 22, 40, 0.92);
+  border: 1px solid rgba(246, 211, 101, 0.4);
+  border-radius: 20px;
+  padding: 36px 30px 28px;
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 35px var(--gold-glow);
+  transform: scale(0.9) translateY(20px);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.star-modal-overlay.open .star-modal-card {
+  transform: scale(1) translateY(0);
+}
+
+.star-number-tag {
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.star-quote-text {
+  font-family: var(--font-display);
+  font-size: clamp(18px, 3vw, 24px);
+  line-height: 1.6;
+  color: var(--soft-white);
+  min-height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-style: italic;
+}
+
+/* Glowing Butterfly for transition */
+.butterfly-flight {
+  position: fixed;
+  width: 48px;
+  height: 48px;
+  z-index: 2000;
+  pointer-events: none;
+  opacity: 0;
+  filter: drop-shadow(0 0 15px var(--gold));
+  transition: opacity 0.5s ease;
+}
+
+.butterfly-flight.active {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   CHAPTER 4: HEART MACHINE
+   ========================================================================== */
+#chapter-heart {
+  background: radial-gradient(circle at center, #1b0a1a 0%, #0a040b 70%, #030104 100%);
+}
+
+.heart-machine-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.giant-heart-box {
+  position: relative;
+  width: 220px;
+  height: 200px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (min-width: 768px) {
+  .giant-heart-box {
+    width: 280px;
+    height: 250px;
+  }
+}
+
+.crystal-heart-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 25px rgba(255, 70, 120, 0.5));
+  transition: filter 0.3s ease;
+}
+
+.giant-heart-box:hover .crystal-heart-svg {
+  filter: drop-shadow(0 0 45px rgba(255, 70, 120, 0.85));
+}
+
+.heart-percentage {
+  position: absolute;
+  top: 52%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-title);
+  font-size: clamp(28px, 5vw, 42px);
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(255, 100, 150, 0.9);
+  pointer-events: none;
+}
+
+.heart-progress-bar {
+  width: 260px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 100, 150, 0.3);
+  box-shadow: 0 0 15px rgba(255, 70, 120, 0.2);
+}
+
+.heart-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(to right, #ff758c, #ff7eb3, #ffd700);
+  border-radius: 9999px;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 15px rgba(255, 126, 179, 0.8);
+}
+
+.heart-instruction {
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+}
+
+.heart-completion-text {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 500px;
+}
+
+.heart-completion-text.show {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ==========================================================================
+   CHAPTER 5: TIME MACHINE
+   ========================================================================== */
+#chapter-time {
+  background: radial-gradient(circle at center, #1b1308 0%, #0c0803 70%, #030201 100%);
+}
+
+.clock-environment {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  margin: 20px 0;
+}
+
+@media (min-width: 768px) {
+  .clock-environment {
+    width: 360px;
+    height: 360px;
+  }
+}
+
+.clock-housing {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 8px solid #b8860b;
+  box-shadow: 0 0 40px rgba(218, 165, 32, 0.3), inset 0 0 35px rgba(0, 0, 0, 0.9);
+  background: radial-gradient(circle, #241b10 0%, #150f07 70%, #0b0703 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gear {
+  position: absolute;
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+.gear-1 {
+  width: 140px;
+  height: 140px;
+  top: 10%;
+  right: 5%;
+  animation: spinGear 20s linear infinite;
+}
+
+.gear-2 {
+  width: 100px;
+  height: 100px;
+  bottom: 15%;
+  left: 10%;
+  animation: spinGearRev 14s linear infinite;
+}
+
+@keyframes spinGear {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spinGearRev {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+.clock-face {
+  position: relative;
+  width: 85%;
+  height: 85%;
+  border-radius: 50%;
+  border: 2px dashed rgba(246, 211, 101, 0.4);
+}
+
+.numeral {
+  position: absolute;
+  font-family: var(--font-title);
+  font-size: 16px;
+  color: var(--gold);
+  transform: translate(-50%, -50%);
+}
+
+.hand-hour, .hand-minute {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform-origin: bottom center;
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(246, 211, 101, 0.4);
+  transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hand-hour {
+  width: 6px;
+  height: 60px;
+  background: #ffea79;
+  margin-left: -3px;
+  transform: rotate(120deg);
+}
+
+.hand-minute {
+  width: 4px;
+  height: 90px;
+  background: #ffffff;
+  margin-left: -2px;
+  transform: rotate(280deg);
+}
+
+.clock-center-pin {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 2px solid #fff;
+  z-index: 10;
+  box-shadow: 0 0 12px var(--gold);
+}
+
+.time-story-container {
+  min-height: 100px;
+  max-width: 620px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.time-story-text {
+  font-family: var(--font-display);
+  font-size: clamp(18px, 2.8vw, 26px);
+  line-height: 1.6;
+  font-style: italic;
+  color: var(--gold-bright);
+  text-shadow: 0 0 20px rgba(246, 211, 101, 0.4);
+  transition: opacity 0.8s ease;
+}
+
+/* ==========================================================================
+   CHAPTER 6: SECRET VAULT
+   ========================================================================== */
+#chapter-vault {
+  background: radial-gradient(circle at center, #101524 0%, #060912 70%, #020307 100%);
+}
+
+.vault-door-container {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  margin: 15px auto;
+}
+
+@media (min-width: 768px) {
+  .vault-door-container {
+    width: 350px;
+    height: 350px;
+  }
+}
+
+.vault-bulkhead {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, #252a3d 0%, #151824 65%, #0d0f17 100%);
+  border: 12px solid #363e59;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9), inset 0 0 30px rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 1.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.2s ease;
+}
+
+.vault-wheel {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 8px solid #f6d365;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 25px rgba(246, 211, 101, 0.4);
+  transition: transform 2.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wheel-spoke {
+  position: absolute;
+  width: 6px;
+  height: 100%;
+  background: #f6d365;
+}
+
+.wheel-spoke:nth-child(2) { transform: rotate(60deg); }
+.wheel-spoke:nth-child(3) { transform: rotate(120deg); }
+
+.wheel-center-hub {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  background: #111420;
+  border: 3px solid #f6d365;
+  border-radius: 50%;
+  z-index: 5;
+}
+
+.vault-bulkhead.open {
+  transform: scale(0) rotate(180deg);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Floating Envelopes Inside Vault */
+.envelopes-grid {
+  display: none;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  max-width: 580px;
+  width: 100%;
+  margin-top: 15px;
+}
+
+@media (min-width: 640px) {
+  .envelopes-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+}
+
+.envelopes-grid.show {
+  display: grid;
+  animation: fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.envelope-card {
+  background: rgba(22, 28, 48, 0.85);
+  border: 1px solid rgba(246, 211, 101, 0.3);
+  border-radius: 14px;
+  padding: 20px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+.envelope-card:hover {
+  transform: translateY(-5px) scale(1.03);
+  border-color: var(--gold);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 20px var(--gold-glow);
+}
+
+.envelope-icon {
+  font-size: 28px;
+}
+
+.envelope-tag {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--soft-white);
+}
+
+.envelope-card.special {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, rgba(246, 211, 101, 0.2), rgba(253, 160, 133, 0.2));
+  border: 1px solid var(--gold);
+  box-shadow: 0 0 25px var(--gold-glow);
+  padding: 22px 20px;
+}
+
+/* ==========================================================================
+   CHAPTER 7: MEMORY CAMERA
+   ========================================================================== */
+#chapter-camera {
+  background: radial-gradient(circle at center, #0e1220 0%, #060812 70%, #020308 100%);
+}
+
+.camera-stage {
+  position: relative;
+  width: 290px;
+  height: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 15px auto;
+}
+
+/* Polaroid Vintage Body */
+.polaroid-camera-body {
+  position: relative;
+  width: 240px;
+  height: 180px;
+  background: linear-gradient(135deg, #f5f5f0 0%, #dcdcd5 100%);
+  border-radius: 24px 24px 14px 14px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), inset 0 2px 5px #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.polaroid-camera-body:hover {
+  transform: scale(1.02);
+}
+
+/* Lens */
+.camera-lens {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #2a2d34 0%, #15171c 60%, #08090b 100%);
+  border: 6px solid #b8b8b0;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.lens-glare {
+  position: absolute;
+  top: 18%;
+  left: 24%;
+  width: 22px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  transform: rotate(-35deg);
+}
+
+.shutter-button {
+  position: absolute;
+  top: -10px;
+  right: 32px;
+  width: 32px;
+  height: 14px;
+  background: #e63946;
+  border-radius: 6px 6px 0 0;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+}
+
+.camera-flash-bulb {
+  position: absolute;
+  top: 18px;
+  left: 24px;
+  width: 34px;
+  height: 24px;
+  background: #333;
+  border-radius: 6px;
+  border: 2px solid #bbb;
+  box-shadow: inset 0 0 8px #fff;
+}
+
+.film-slot {
+  position: absolute;
+  bottom: -4px;
+  width: 170px;
+  height: 6px;
+  background: #111;
+  border-radius: 3px;
+  z-index: 12;
+}
+
+/* Sliding & Developing Polaroid Photo */
+.polaroid-photo-frame {
+  position: absolute;
+  top: 90px;
+  width: 220px;
+  background: #ffffff;
+  border-radius: 4px;
+  padding: 12px 12px 28px 12px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  transform: translateY(0);
+  transition: transform 2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+}
+
+.polaroid-photo-frame.ejected {
+  opacity: 1;
+  transform: translateY(120px);
+  z-index: 20;
+}
+
+.polaroid-photo-frame.floating-away {
+  transition: transform 6s cubic-bezier(0.4, 0, 0.2, 1), opacity 5s ease;
+  transform: translateY(-350px) rotate(8deg) scale(0.65);
+  opacity: 0;
+}
+
+.photo-image-container {
+  width: 196px;
+  height: 220px;
+  background: #eae8e1;
+  overflow: hidden;
+  position: relative;
+  border-radius: 2px;
+}
+
+.actual-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(2) contrast(0.5) blur(6px);
+  opacity: 0.1;
+  transition: filter 4s cubic-bezier(0.16, 1, 0.3, 1), opacity 4s ease;
+}
+
+.actual-photo.developed {
+  filter: brightness(1.05) contrast(1.05) blur(0);
+  opacity: 1;
+}
+
+.photo-caption {
+  margin-top: 10px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  color: #222;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 1.5s ease 2s;
+}
+
+.photo-caption.show {
+  opacity: 1;
+}
+
+.photo-date {
+  font-size: 11px;
+  color: #666;
+  margin-top: 2px;
+  letter-spacing: 0.08em;
+}
+
+/* Camera Flash Screen Overlay */
+.screen-flash-overlay {
+  position: fixed;
+  inset: 0;
+  background: #ffffff;
+  z-index: 99999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.08s ease;
+}
+
+.screen-flash-overlay.flashing {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   CHAPTER 8: FINAL GOODBYE
+   ========================================================================== */
+#chapter-goodbye {
+  background: #000000;
+}
+
+.goodbye-sky {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.solitary-star {
+  width: 18px;
+  height: 18px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 20px #ffd700, 0 0 45px #ffaa00;
+  margin-bottom: 24px;
+  animation: solitaryTwinkle 3s infinite ease-in-out alternate;
+  cursor: pointer;
+  transition: transform 0.5s ease;
+}
+
+.solitary-star:hover {
+  transform: scale(1.5);
+}
+
+@keyframes solitaryTwinkle {
+  0% { transform: scale(0.85); opacity: 0.6; }
+  100% { transform: scale(1.2); opacity: 1; }
+}
+
+.goodbye-typewriter-text {
+  font-family: var(--font-display);
+  font-size: clamp(20px, 3.5vw, 32px);
+  color: var(--soft-white);
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-style: italic;
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 25px rgba(246, 211, 101, 0.5);
+  max-width: 650px;
+  margin: 0 auto;
+}
+
+.final-memory-text {
+  font-family: var(--font-title);
+  font-size: clamp(16px, 2.5vw, 22px);
+  color: var(--gold-bright);
+  letter-spacing: 0.12em;
+  opacity: 0;
+  transform: translateY(15px);
+  transition: all 1.8s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-top: 24px;
+}
+
+.final-memory-text.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.replay-btn {
+  margin-top: 36px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 1s ease;
+}
+
+.replay-btn.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   EASTER EGGS & FLOATING WISHES
+   ========================================================================== */
+.floating-wish-bubble {
+  position: fixed;
+  background: rgba(20, 25, 45, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--gold);
+  border-radius: 9999px;
+  padding: 8px 20px;
+  color: var(--soft-white);
+  font-size: 13px;
+  font-family: var(--font-body);
+  pointer-events: none;
+  z-index: 9999;
+  box-shadow: 0 0 20px var(--gold-glow);
+  animation: bubbleRise 3.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes bubbleRise {
+  0% { opacity: 0; transform: translateY(15px) scale(0.85); }
+  20% { opacity: 1; transform: translateY(0) scale(1); }
+  80% { opacity: 1; transform: translateY(-35px) scale(1); }
+  100% { opacity: 0; transform: translateY(-60px) scale(0.9); }
+}
+
+/* Screen shake for heart / vault explosion */
+.screen-shake {
+  animation: shakeScreen 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes shakeScreen {
+  10%, 90% { transform: translate3d(-2px, -2px, 0); }
+  20%, 80% { transform: translate3d(3px, 3px, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 2px, 0); }
+  40%, 60% { transform: translate3d(4px, -3px, 0); }
+}

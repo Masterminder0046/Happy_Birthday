@@ -1,0 +1,6 @@
+{
+  "name": "Nathiya's Birthday Surprise",
+  "description": "An interactive cinematic birthday surprise experience crafted for Nathiya.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
