@@ -1595,7 +1595,7 @@ class StoryManager {
 
       if (typewriterEl) {
         typewriterEl.textContent = '';
-        const msg1 = "Final goodbye, see you soon...";
+        const msg1 = "Bye, see you soon...";
         let i = 0;
         const t1 = setInterval(() => {
           typewriterEl.textContent += msg1[i];
